@@ -93,8 +93,9 @@ export function App() {
     [activeConversationId, conversations]
   );
 
-  const latestLog = metrics?.recentLogs[0];
   const activeProvider = providerStatus?.providers.find((provider) => provider.active);
+  const activeModelLabel = activeProvider?.model ?? "Loading provider...";
+  const latestLog = metrics?.recentLogs[0];
   const filteredConversations = useMemo(
     () =>
       conversations.filter((conversation) =>
@@ -230,8 +231,14 @@ export function App() {
   }
 
   async function handleSelectProvider(providerId: ProviderInfo["id"]) {
-    setProviderStatus(await selectProvider(providerId));
-    await refreshMetrics();
+    try {
+      setError(undefined);
+      setProviderStatus(await selectProvider(providerId));
+      await refreshMetrics();
+    } catch (err) {
+      setError((err as Error).message);
+      await refreshProviders();
+    }
   }
 
   async function handleCopy(message: ChatMessage) {
@@ -348,7 +355,6 @@ export function App() {
           <AppTopbar
             activeConversation={activeConversation}
             activeProvider={activeProvider}
-            latestLog={latestLog}
             onMenu={() => setSidebarOpen(true)}
             onProviderChange={handleSelectProvider}
             onRefresh={refreshConversations}
@@ -395,7 +401,7 @@ export function App() {
                 value={draft}
               />
               <div className="composer-meta">
-                <span>{latestLog?.model ?? "gemini-2.5-flash-lite"}</span>
+                <span>{activeModelLabel}</span>
                 <span>{draft.length.toLocaleString()} chars</span>
               </div>
             </div>
@@ -422,7 +428,6 @@ export function App() {
 function AppTopbar({
   activeConversation,
   activeProvider,
-  latestLog,
   onMenu,
   onProviderChange,
   onRefresh
@@ -431,7 +436,6 @@ function AppTopbar({
 }: {
   activeConversation?: Conversation;
   activeProvider?: ProviderInfo;
-  latestLog?: DashboardMetrics["recentLogs"][number];
   onMenu: () => void;
   onProviderChange: (providerId: ProviderInfo["id"]) => void;
   onRefresh: () => void;
@@ -451,9 +455,11 @@ function AppTopbar({
           <Zap size={14} />
           <select
             aria-label="Select LLM provider"
+            disabled={providers.length === 0}
             onChange={(event) => onProviderChange(event.target.value as ProviderInfo["id"])}
-            value={activeProvider?.id ?? latestLog?.provider ?? "mock"}
+            value={activeProvider?.id ?? ""}
           >
+            {providers.length === 0 ? <option value="">Loading providers...</option> : null}
             {providers.map((provider) => (
               <option disabled={!provider.configured} key={provider.id} value={provider.id}>
                 {provider.name} {provider.configured ? `· ${provider.model}` : "· add key"}
