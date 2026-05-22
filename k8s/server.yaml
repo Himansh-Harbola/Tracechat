@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracechat-api
+  namespace: tracechat
+spec:
+  ports:
+    - port: 4000
+      targetPort: 4000
+  selector:
+    app: tracechat-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracechat-api
+  namespace: tracechat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tracechat-api
+  template:
+    metadata:
+      labels:
+        app: tracechat-api
+    spec:
+      containers:
+        - name: api
+          image: tracechat-server:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: tracechat-config
+            - secretRef:
+                name: tracechat-secrets
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 10

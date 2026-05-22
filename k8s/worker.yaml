@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracechat-worker
+  namespace: tracechat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tracechat-worker
+  template:
+    metadata:
+      labels:
+        app: tracechat-worker
+    spec:
+      containers:
+        - name: worker
+          image: tracechat-server:latest
+          imagePullPolicy: IfNotPresent
+          command: ["npm", "--workspace", "apps/server", "run", "start:worker"]
+          envFrom:
+            - configMapRef:
+                name: tracechat-config
+            - secretRef:
+                name: tracechat-secrets
