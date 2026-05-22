@@ -102,3 +102,10 @@ Self-hosted Kubernetes manifests live in `k8s/`. They include Postgres, Redis, A
 - Add provider adapters for Anthropic and local models.
 - Add richer dashboards with time buckets and percentile latency.
 - Add automated tests around ingestion validation and cancellation behavior.
+
+## Screenshots 
+<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/3c75182e-7ef0-403e-a4a5-90abd0456f03" />
+<img width="1919" height="915" alt="image" src="https://github.com/user-attachments/assets/0870ab64-641f-4414-90f4-cbbbeab37556" />
+<img width="604" height="629" alt="image" src="https://github.com/user-attachments/assets/fc8e7a42-f721-4ef5-aefe-5dd72f661238" />
+
+
